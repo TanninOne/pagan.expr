@@ -3,6 +3,7 @@
 #include <format>
 #include <stdexcept>
 #include <unordered_map>
+#include <iostream>
 
 namespace SYP {
 
@@ -87,7 +88,7 @@ inline bool isHexDigit(char ch)
 
 inline bool isIdentifierCharacter(char ch) {
   return ((ch >= '0') && (ch <= '9')) || ((ch >= 'a') && (ch <= 'z')) ||
-         ((ch >= 'A') && (ch <= 'Z')) || (ch == '_');
+         ((ch >= 'A') && (ch <= 'Z')) || (ch == '_') || (ch == '.');
 }
 
 [[nodiscard]] Token readIdentifierToken(std::string_view::const_iterator &pos,
@@ -162,6 +163,7 @@ inline bool isIdentifierCharacter(char ch) {
           {'=',
            {
                {'=', static_cast<unsigned>(OperatorType::Equal)},
+               {'_', static_cast<unsigned>(OperatorType::Assign)},
            }},
           {'&',
            {
@@ -196,14 +198,21 @@ inline bool isIdentifierCharacter(char ch) {
         result = static_cast<unsigned>(OperatorType::LogicalAnd);
         pos += 2;
       } else {
-        const auto &nextDict = OPERATORS_2.at(firstChar);
-        char nextChar = *pos;
-        auto iter = nextDict.find(nextChar);
-        if (iter != nextDict.end()) {
-          result = iter->second;
-          ++pos;
-        } else {
-          result = nextDict.at('_');
+        auto iter_2 = OPERATORS_2.find(firstChar);
+        result = 0;
+        if (iter_2 != OPERATORS_2.end()) {
+          const auto &nextDict = *iter_2;
+          char nextChar = *pos;
+          auto iter = nextDict.second.find(nextChar);
+          if (iter != nextDict.second.end()) {
+            result = iter->second;
+            ++pos;
+          } else {
+            auto iter_3 = nextDict.second.find('_');
+            if (iter_3 != nextDict.second.end()) {
+              result = iter_3->second;
+            }
+          }
         }
       }
 
@@ -222,7 +231,7 @@ inline bool isIdentifierCharacter(char ch) {
 
 [[nodiscard]] Token nextToken(std::string_view::const_iterator &pos,
                               std::string_view::const_iterator end) {
-  while ((*pos == ' ') || (*pos == ',')) {
+  while ((*pos == ' ') || (*pos == '\r') || (*pos == '\n') || (*pos == ',')) {
     ++pos;
   }
   char ch = *pos;
@@ -241,6 +250,7 @@ inline bool isIdentifierCharacter(char ch) {
     ++pos;
     return Token(OperatorType::BracketClose);
   }
+  std::cout << "failed to parse token " << ch << std::endl;
   throw std::runtime_error("failed to parse token");
 }
 
@@ -295,7 +305,7 @@ void pushToStack(std::vector<Token> &output_stack,
   }
 }
 
-std::vector<Token> tokenize(std::string_view input) {
+std::vector<SYP::Token> tokenize(std::string_view input) {
   std::vector<Token> output_stack;
   std::vector<Token> operator_stack;
 
@@ -325,4 +335,4 @@ std::vector<Token> tokenize(std::string_view input) {
   return output_stack;
 }
 
-} // namespace SYP
+}

@@ -3,7 +3,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <iterator>
 #include <memory>
+#include <ranges>
+#include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
@@ -26,6 +29,8 @@ enum class TokenType {
 
 enum class OperatorType : unsigned {
   Invalid,
+
+  Assign,
 
   // arithmetics
   Add,
@@ -85,16 +90,11 @@ struct Token;
 
 using VariableId = uint64_t;
 using KnownVariables = std::vector<std::string>;
-using DynamicFunction = std::function<Token(const std::vector<Token> &begin)>;
+using DynamicFunction = std::function<Token(const std::vector<Token>&)>;
 using KnownFunctions = std::vector<std::pair<std::string, DynamicFunction>>;
 using TokenValue = std::variant<OperatorType, uint64_t, int64_t, double, bool>;
 
 using TokenQueue = std::vector<Token>;
-// using TokenStack = std::stack<Token, std::list<Token>>;         // time 397
-// ns, cpu 381 ns, 1723077 iterations using TokenStack = std::stack<Token>; //
-// time 322 ns, cpu 289 ns, 2488889 iterations using TokenStack =
-// std::stack<Token, std::vector<Token>>;    // time 186 ns, cpu 157 ns, 4480000
-// iterations
 using TokenStack = std::pair<std::vector<Token>, size_t>;
 
 struct Token {
@@ -110,7 +110,7 @@ struct Token {
     bool boolValue;
   };
 
-  Token() : type(TokenType::Undefined) {}
+  Token() : type(TokenType::Undefined), op(OperatorType::Invalid) {}
 
   Token(const std::string &valueIn, TokenType type) : type(type) {
     if (type == TokenType::FunctionName) {
@@ -120,31 +120,24 @@ struct Token {
     }
   }
 
-  // need to be able to call with a single argument, otherwise const char* might
-  // end up implicitly casted to bool
-  Token(const char *valueIn, TokenType type = TokenType::String)
-      : Token(std::string(valueIn), type) {}
+  // need to be able to call with a single argument, otherwise const char* might end up implicitly casted to bool
+  Token(const char* valueIn, TokenType type = TokenType::String) : Token(std::string(valueIn), type) {}
 
   Token(uint64_t valueIn) : type(TokenType::Unsigned), unsignedValue(valueIn) {}
   Token(int64_t valueIn) : type(TokenType::Signed), signedValue(valueIn) {}
   Token(int valueIn) : type(TokenType::Signed), signedValue(valueIn) {}
   Token(double valueIn) : type(TokenType::Float), floatValue(valueIn) {}
   Token(bool valueIn) : type(TokenType::Boolean), boolValue(valueIn) {}
-  Token(const std::string &name, const DynamicFunction &function)
-      : type(TokenType::Function) {
-    auto iter = std::find_if(
-        s_KnownFunctions.begin(), s_KnownFunctions.end(),
-        [&](const std::pair<std::string, DynamicFunction> &iter) -> bool {
-          return iter.first == name;
-        });
+  Token(const std::string& name, const DynamicFunction& function) : type(TokenType::Function) {
+    auto iter = std::find_if(s_KnownFunctions.begin(), s_KnownFunctions.end(), [&](const std::pair<std::string, DynamicFunction> &iter) -> bool { return iter.first == name; });
     uint64_t offset;
     if (iter == s_KnownFunctions.end()) {
-      // unreferenced function, shouldn't happen when coming from a tokenizer
-      // but may occur in synthetic unit tests
+      // unreferenced function, shouldn't happen when coming from a tokenizer but may occur in
+      // synthetic unit tests
       offset = s_KnownFunctions.size();
       s_KnownFunctions.emplace_back(name, function);
     } else {
-      if (iter->second == nullptr) {
+      if (iter->second == nullptr)    {
         iter->second = function;
       }
       offset = iter - s_KnownFunctions.begin();
@@ -154,10 +147,14 @@ struct Token {
 
   Token(OperatorType op) : type(TokenType::Operator), op(op) {}
 
-  [[nodiscard]] Token evaluate(TokenStack &iter) const;
+  [[nodiscard]] Token
+  evaluate(TokenStack &iter,
+           const std::function<Token(const std::string &)> &resolve,
+           const std::function<void(const std::string &, const Token &)>
+               &assign) const;
 
   [[nodiscard]] const std::string &getVariableName() const {
-    return type == TokenType::FunctionName
+   return type == TokenType::FunctionName
                ? s_KnownFunctions[unsignedValue].first
                : s_KnownVariables[unsignedValue];
   }
@@ -167,12 +164,9 @@ struct Token {
   }
 
 private:
-  void initFunction(const std::string &valueIn) {
-    auto iter = std::find_if(
-        s_KnownFunctions.begin(), s_KnownFunctions.end(),
-        [&](const std::pair<std::string, DynamicFunction> &iter) -> bool {
-          return iter.first == valueIn;
-        });
+
+  void initFunction(const std::string& valueIn) {
+    auto iter = std::find_if(s_KnownFunctions.begin(), s_KnownFunctions.end(), [&](const std::pair<std::string, DynamicFunction> &iter) -> bool { return iter.first == valueIn; });
     uint64_t offset;
     if (iter == s_KnownFunctions.end()) {
       offset = s_KnownFunctions.size();
@@ -183,10 +177,8 @@ private:
     unsignedValue = offset;
   }
 
-  void initVariable(const std::string &valueIn) {
-    auto iter = std::find_if(
-        s_KnownVariables.begin(), s_KnownVariables.end(),
-        [&](const std::string &iter) -> bool { return iter == valueIn; });
+  void initVariable(const std::string& valueIn) {
+    auto iter = std::find_if(s_KnownVariables.begin(), s_KnownVariables.end(), [&](const std::string &iter) -> bool { return iter == valueIn; });
     uint64_t offset;
     if (iter == s_KnownVariables.end()) {
       offset = s_KnownVariables.size();
@@ -198,6 +190,7 @@ private:
   }
 
 private:
+
   static KnownVariables s_KnownVariables;
   static KnownFunctions s_KnownFunctions;
   static uint64_t s_NextVariable;
@@ -406,4 +399,4 @@ private:
 
 */
 
-} // namespace SYP
+}
