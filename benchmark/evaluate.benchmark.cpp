@@ -1,12 +1,14 @@
 #include "../src/evaluate.h"
 #include "../src/shunting_yard.h"
 
-#include <benchmark/benchmark.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
+
+#include <cstdint>
 #include <stdexcept>
-#include <string_view>
-#include <iostream>
 
 using namespace std::string_view_literals;
+using namespace SYP;
 
 const Token& variables(const std::string &name) {
   static std::unordered_map<std::string, Token> variables = {
@@ -20,24 +22,15 @@ const Token& variables(const std::string &name) {
   throw std::runtime_error("Unknown variable: " + name);
 }
 
-static void BM_EvaluateTerm(benchmark::State& state) {
+TEST_CASE("benchmark evaluate", "[Evaluate]") {
   auto tokens = tokenize("3 * two == 6"sv);
-  for (auto _ : state)
-  {
-    auto result = evaluate(tokens, variables);
-  }
-}
+  BENCHMARK("evaluate") {
+    return evaluate(tokens, variables);
+  };
 
-BENCHMARK(BM_EvaluateTerm);
-
-static void BM_EvaluateReference(benchmark::State& state) {
-  auto tokens = tokenize("3 * two == 6"sv);
   int64_t var = 2;
-  for (auto _ : state)
-  {
-    // volatile so the compiler can't optimize this away
-    volatile auto result = (3 * var) == 6;
-  }
+  BENCHMARK("evaluate reference") {
+    return (3 * var) == 6;
+  };
 }
 
-BENCHMARK(BM_EvaluateReference);

@@ -1,17 +1,11 @@
-#include "../src/shunting_yard.h"
+#include "shunting_yard.h"
 
-#include <string_view>
-#include <benchmark/benchmark.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
-using namespace std::string_view_literals;
-
-static void BM_ParseTerm(benchmark::State& state) {
+TEST_CASE("benchmark shunting_yard", "[ShuntingYard]") {
   std:: string expression = "3 * two == 6";
-  for (auto _ : state)
-  {
-    auto tokens = tokenize(expression);
-  }
+  BENCHMARK("tokenize") {
+    return SYP::tokenize(expression);
+  };
 }
-
-// Register the function as a benchmark
-BENCHMARK(BM_ParseTerm);

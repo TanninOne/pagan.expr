@@ -1,20 +1,21 @@
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
-#include "../src/evaluate.h"
+#include "evaluate.h"
 
 using namespace std::literals;
+using namespace SYP;
 
-TEST(Evalute, SupportsAddition) {
+TEST_CASE("SupportsAddition", "[Evalute]") {
   std::vector<Token> tokens {
     Token(1),
     Token(1),
     Token(OperatorType::Add),
   };
 
-  EXPECT_EQ(std::get<int64_t>(evaluate(tokens)), 2);
+  REQUIRE(std::get<int64_t>(evaluate(tokens)) == 2);
 }
 
-TEST(Evalute, SupportsMultipleOperations) {
+TEST_CASE("SupportsMultipleOperations", "[Evalute]") {
   std::vector<Token> tokens {
     Token(1),
     Token(1),
@@ -23,10 +24,10 @@ TEST(Evalute, SupportsMultipleOperations) {
     Token(OperatorType::Add),
   };
 
-  EXPECT_EQ(std::get<int64_t>(evaluate(tokens)), 3);
+  REQUIRE(std::get<int64_t>(evaluate(tokens)) == 3);
 }
 
-TEST(Evalute, SupportsMultiplication) {
+TEST_CASE("SupportsMultiplication", "[Evalute]") {
   std::vector<Token> tokens {
     Token(1),
     Token(1),
@@ -35,10 +36,10 @@ TEST(Evalute, SupportsMultiplication) {
     Token(OperatorType::Multiply),
   };
 
-  EXPECT_EQ(std::get<int64_t>(evaluate(tokens)), 4);
+  REQUIRE(std::get<int64_t>(evaluate(tokens)) == 4);
 }
 
-TEST(Evalute, SupportsComparison) {
+TEST_CASE("SupportsComparison", "[Evalute]") {
   std::vector<Token> tokens {
     Token(1),
     Token(1),
@@ -47,20 +48,20 @@ TEST(Evalute, SupportsComparison) {
     Token(OperatorType::Equal),
   };
 
-  EXPECT_EQ(std::get<bool>(evaluate(tokens)), true);
+  REQUIRE(std::get<bool>(evaluate(tokens)) == true);
 
   tokens[3].signedValue = 3;
-  EXPECT_EQ(std::get<bool>(evaluate(tokens)), false);
+  REQUIRE(std::get<bool>(evaluate(tokens)) == false);
 }
 
-TEST(Evalute, SupportsFloat) {
+TEST_CASE("SupportsFloat", "[Evalute]") {
   std::vector<Token> tokens {
     Token(3.0f),
     Token(0.5f),
     Token(OperatorType::Multiply),
   };
 
-  EXPECT_EQ(std::get<double>(evaluate(tokens)), 1.5f);
+  REQUIRE(std::get<double>(evaluate(tokens)) == 1.5f);
 }
 
 Token varIsTwo(const std::string &variable) {
@@ -71,17 +72,17 @@ Token varIsTwo(const std::string &variable) {
   throw std::runtime_error("unexpected variable name");
 }
 
-TEST(Evalute, SupportsVariables) {
+TEST_CASE("SupportsVariables", "[Evalute]") {
   std::vector<Token> tokens {
     Token{ "var", TokenType::Variable },
     Token{ 2.0 },
     Token{ OperatorType::Multiply },
   };
 
-  EXPECT_EQ(std::get<double>(evaluate(tokens, varIsTwo)), 4);
+  REQUIRE(std::get<double>(evaluate(tokens, varIsTwo)) == 4);
 }
 
-TEST(Evalute, Performance) {
+TEST_CASE("Performance", "[Evalute]") {
   std::vector<Token> tokens {
     Token{ "var", TokenType::Variable },
     Token{ 2.0 },
@@ -89,7 +90,7 @@ TEST(Evalute, Performance) {
   };
 
   for (int i = 0; i < 1000000; i++) {
-    EXPECT_EQ(std::get<double>(evaluate(tokens, varIsTwo)), 4.0);
+    REQUIRE(std::get<double>(evaluate(tokens, varIsTwo)) == 4.0);
   }
 }
 

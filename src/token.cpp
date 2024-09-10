@@ -289,9 +289,15 @@ Token Token::evaluate(
   }
   if (op == OperatorType::ArgumentList) {
     std::vector<Token> funcArgs;
-    --args.second;
-    while (args.first[args.second].type != TokenType::Function) {
-      funcArgs.emplace_back(resolve(args.first[args.second--].getVariableName()));
+    while (args.first[--args.second].type != TokenType::Function) {
+      auto name = args.first[args.second].getVariableName();
+      if (args.first[args.second].type == TokenType::Variable)
+      {
+        funcArgs.emplace_back(resolve(name));
+      }
+      else {
+        funcArgs.emplace_back(args.first[args.second]);
+      }
    }
     std::reverse(funcArgs.begin(), funcArgs.end());
     return args.first[args.second].getFunction()(funcArgs);

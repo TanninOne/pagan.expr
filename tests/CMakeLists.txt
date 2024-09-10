@@ -5,13 +5,13 @@ enable_testing()
 
 set(SRCS shunting_yard.test.cpp evaluate.test.cpp integration.test.cpp)
 
-find_package(GTest REQUIRED COMPONENTS gtest gmock gtest_main gmock_main)
+find_package(Catch2 CONFIG REQUIRED)
 
 include_directories(${GTest_INCLUDE_DIRS})
 include(GoogleTest)
 
 add_executable(${PROJECT_NAME} ${SRCS})
-target_link_libraries(${PROJECT_NAME} GTest::gtest GTest::gmock GTest::gtest_main GTest::gmock_main syexpr)
+target_link_libraries(${PROJECT_NAME} Catch2::Catch2 Catch2::Catch2WithMain syexpr::syexpr)
 
 add_compile_options("/std:c++latest")
 add_test(NAME ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin COMMAND ${PROJECT_NAME})

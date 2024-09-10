@@ -1,83 +1,82 @@
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
+
 #include <memory>
 
-#include "../src/shunting_yard.h"
+#include "shunting_yard.h"
 
 using namespace std::literals;
+using namespace SYP;
 
-TEST(ShuntingYard, ParsesTwoOperandStatement) {
+TEST_CASE("parses two operand statement", "[ShuntingYard]") {
   auto tokens = tokenize("1 + 1"sv);
 
-  EXPECT_EQ(tokens.size(), 3);
-  EXPECT_EQ(tokens[2].type, TokenType::Operator);
-  EXPECT_EQ(tokens[2].op, OperatorType::Add);
+  REQUIRE(tokens.size() == 3);
+  REQUIRE(tokens[2].type == TokenType::Operator);
+  REQUIRE(tokens[2].op == OperatorType::Add);
 }
 
-TEST(ShuntingYard, ParsesThreeOperandStatement) {
+TEST_CASE("parses three operand statement", "[ShuntingYard]") {
   auto tokens = tokenize("1 + 1 + 1"sv);
 
-  EXPECT_EQ(tokens.size(), 5);
-  EXPECT_EQ(tokens[2].type, TokenType::Operator);
-  EXPECT_EQ(tokens[4].type, TokenType::Operator);
-  EXPECT_EQ(tokens[2].op, OperatorType::Add);
-  EXPECT_EQ(tokens[4].op, OperatorType::Add);
+  REQUIRE(tokens.size() == 5);
+  REQUIRE(tokens[2].type == TokenType::Operator);
+  REQUIRE(tokens[4].type == TokenType::Operator);
+  REQUIRE(tokens[2].op == OperatorType::Add);
+  REQUIRE(tokens[4].op == OperatorType::Add);
 }
 
-TEST(ShuntingYard, ObeysOperatorPriority) {
+TEST_CASE("obeys operator priority", "[ShuntingYard]") {
   auto tokens = tokenize("1 + 2 * 2"sv);
 
-  EXPECT_EQ(tokens.size(), 5);
-  EXPECT_EQ(tokens[3].type, TokenType::Operator);
-  EXPECT_EQ(tokens[4].type, TokenType::Operator);
-  EXPECT_EQ(tokens[3].op, OperatorType::Multiply);
-  EXPECT_EQ(tokens[4].op, OperatorType::Add);
+  REQUIRE(tokens.size() == 5);
+  REQUIRE(tokens[3].type == TokenType::Operator);
+  REQUIRE(tokens[4].type == TokenType::Operator);
+  REQUIRE(tokens[3].op == OperatorType::Multiply);
+  REQUIRE(tokens[4].op == OperatorType::Add);
 }
 
-TEST(ShuntingYard, PairsOperatorWithArguments) {
+TEST_CASE("pairs operator with arguments", "[ShuntingYard]") {
   auto tokens = tokenize("2 * 2 + 1"sv);
 
-  EXPECT_EQ(tokens.size(), 5);
-  EXPECT_EQ(tokens[2].type, TokenType::Operator);
-  EXPECT_EQ(tokens[4].type, TokenType::Operator);
-  EXPECT_EQ(tokens[2].op, OperatorType::Multiply);
-  EXPECT_EQ(tokens[4].op, OperatorType::Add);
+  REQUIRE(tokens.size() == 5);
+  REQUIRE(tokens[2].type == TokenType::Operator);
+  REQUIRE(tokens[4].type == TokenType::Operator);
+  REQUIRE(tokens[2].op == OperatorType::Multiply);
+  REQUIRE(tokens[4].op == OperatorType::Add);
 }
 
-TEST(ShuntingYard, SupportsBrackets) {
+TEST_CASE("supports brackets", "[ShuntingYard]") {
   auto tokens = tokenize("(1 + 1) * 2");
 
-  EXPECT_EQ(tokens.size(), 5);
-  EXPECT_EQ(tokens[2].type, TokenType::Operator);
-  EXPECT_EQ(tokens[4].type, TokenType::Operator);
-  EXPECT_EQ(tokens[2].op, OperatorType::Add);
-  EXPECT_EQ(tokens[4].op, OperatorType::Multiply);
+  REQUIRE(tokens.size() == 5);
+  REQUIRE(tokens[2].type == TokenType::Operator);
+  REQUIRE(tokens[4].type == TokenType::Operator);
+  REQUIRE(tokens[2].op == OperatorType::Add);
+  REQUIRE(tokens[4].op == OperatorType::Multiply);
 }
 
-TEST(ShuntingYard, SupportsComparison) {
+TEST_CASE("supports comparison", "[ShuntingYard]") {
   auto tokens = tokenize("1 + 1 == 2"sv);
 
-  EXPECT_EQ(tokens.size(), 5);
-  EXPECT_EQ(tokens[2].type, TokenType::Operator);
-  EXPECT_EQ(tokens[4].type, TokenType::Operator);
-  EXPECT_EQ(tokens[2].op, OperatorType::Add);
-  EXPECT_EQ(tokens[4].op, OperatorType::Equal);
+  REQUIRE(tokens.size() == 5);
+  REQUIRE(tokens[2].type == TokenType::Operator);
+  REQUIRE(tokens[4].type == TokenType::Operator);
+  REQUIRE(tokens[2].op == OperatorType::Add);
+  REQUIRE(tokens[4].op == OperatorType::Equal);
 }
 
-TEST(ShuntingYard, SupportsVariables) {
+TEST_CASE("supports variables", "[ShuntingYard]") {
   auto tokens = tokenize("var + 5 < 12"sv);
 
-  EXPECT_EQ(tokens[0].type, TokenType::Variable);
-  EXPECT_EQ(tokens[0].getVariableName(), "var");
+  REQUIRE(tokens[0].type == TokenType::Variable);
+  REQUIRE(tokens[0].getVariableName() == "var");
 }
 
-class ShuntingYardTerms : public testing::TestWithParam<std::string_view> {};
+TEST_CASE("supports various simple terms", "[ShuntingYardTerms]") {
+  auto token = GENERATE("2 * 2", "5 % 2");
+  auto tokens = tokenize(token);
 
-TEST_P(ShuntingYardTerms, SupportsVariousSimpleTerms) {
-  auto tokens = tokenize(GetParam());
-
-  EXPECT_EQ(tokens.size(), 3);
-  EXPECT_EQ(tokens[2].type, TokenType::Operator);
+  REQUIRE(tokens.size() == 3);
+  REQUIRE(tokens[2].type == TokenType::Operator);
 }
-
-INSTANTIATE_TEST_SUITE_P(SimpleTerms, ShuntingYardTerms,
-                         testing::Values("2 * 2", "5 % 2"));
