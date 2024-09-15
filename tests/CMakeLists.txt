@@ -11,7 +11,7 @@ include_directories(${GTest_INCLUDE_DIRS})
 include(GoogleTest)
 
 add_executable(${PROJECT_NAME} ${SRCS})
-target_link_libraries(${PROJECT_NAME} Catch2::Catch2 Catch2::Catch2WithMain syexpr::syexpr)
+target_link_libraries(${PROJECT_NAME} Catch2::Catch2 Catch2::Catch2WithMain pagan::expr)
 
 add_compile_options("/std:c++latest")
 add_test(NAME ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin COMMAND ${PROJECT_NAME})

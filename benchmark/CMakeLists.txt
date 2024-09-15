@@ -7,4 +7,4 @@ set(SRCS evaluate.benchmark.cpp shunting_yard.benchmark.cpp)
 
 add_executable(${PROJECT_NAME} ${SRCS})
 
-target_link_libraries(${PROJECT_NAME} Catch2::Catch2 Catch2::Catch2WithMain syexpr)
+target_link_libraries(${PROJECT_NAME} Catch2::Catch2 Catch2::Catch2WithMain pagan::expr)

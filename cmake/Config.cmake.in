@@ -1,0 +1,10 @@
+set(PAGANEXPR_VERSION x.y.z)
+
+@PACKAGE_INIT@
+
+# set_and_check(PAGANEXPR_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+# set_and_check(PAGANEXPR_LIB_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+
+include(${CMAKE_CURRENT_LIST_DIR}/pagan-exprTargets.cmake)
+
+check_required_components(pagan-expr)

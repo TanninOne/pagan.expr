@@ -1,8 +1,11 @@
 build
+install
 generators
 
 CMakeFiles
 CMakeUserPresets.json
+compile_commands.json
 
 .cache
 .cmake
+.vscode
