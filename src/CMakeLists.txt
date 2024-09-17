@@ -15,3 +15,5 @@ if (MSVC)
 endif()
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME "pagan::expr")

@@ -1,6 +1,7 @@
 build
 install
 generators
+vcpkg_installed
 
 CMakeFiles
 CMakeUserPresets.json
