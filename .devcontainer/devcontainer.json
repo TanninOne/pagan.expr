@@ -1,0 +1,27 @@
+{
+	"name": "C++",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/msclock/features/vcpkg:2": {
+			"vcpkgversion": "latest",
+			"vcpkgroot": "/usr/local/vcpkg",
+			"vcpkgdownload": "/usr/local/vcpkg-downloads"
+		}
+	},
+
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.shell.linux": "/bin/bash"
+			},
+			"extensions": [
+				"ms-vscode.cpptools",
+				"ms-vscode.cpptools-extension-pack",
+				"matepek.vscode-catch2-test-adapter",
+				"ms-vscode.cmake-tools"
+			]
+		}
+	}
+}
