@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.26)
 project(parser_tests CXX)
 
+set(CMAKE_CXX_STANDARD 20)
+
 enable_testing()
 
 set(SRCS shunting_yard.test.cpp evaluate.test.cpp integration.test.cpp)
@@ -13,7 +15,6 @@ include(GoogleTest)
 add_executable(${PROJECT_NAME} ${SRCS})
 target_link_libraries(${PROJECT_NAME} Catch2::Catch2 Catch2::Catch2WithMain pagan::expr)
 
-add_compile_options("/std:c++latest")
 add_test(NAME ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin COMMAND ${PROJECT_NAME})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
