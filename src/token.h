@@ -3,10 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
-#include <iterator>
 #include <memory>
-#include <ranges>
-#include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
@@ -124,6 +121,7 @@ struct Token {
   Token(const char* valueIn, TokenType type = TokenType::String) : Token(std::string(valueIn), type) {}
 
   Token(uint64_t valueIn) : type(TokenType::Unsigned), unsignedValue(valueIn) {}
+  Token(std::size_t valueIn) : type(TokenType::Unsigned), unsignedValue(valueIn) {}
   Token(int64_t valueIn) : type(TokenType::Signed), signedValue(valueIn) {}
   Token(int valueIn) : type(TokenType::Signed), signedValue(valueIn) {}
   Token(double valueIn) : type(TokenType::Float), floatValue(valueIn) {}

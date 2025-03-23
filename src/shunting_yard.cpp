@@ -10,7 +10,12 @@ namespace SYP {
 template <typename T, bool isHex>
 auto strToNum(const std::string_view& view, T& value)
 {
-  if constexpr (isHex) {
+  if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>) {
+    std::size_t idx = 0;
+    value = std::stod(std::string(view), &idx);
+    return std::from_chars_result{ view.data() + idx, std::errc{} };
+  }
+  else if constexpr (isHex) {
     return std::from_chars(view.data(), view.data() + view.size(), value, 16);
   }
   else {

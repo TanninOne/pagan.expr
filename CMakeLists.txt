@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(pagan-expr VERSION 0.1.0 LANGUAGES CXX)
+project(pagan-expr VERSION 0.1.2 LANGUAGES CXX)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
 
